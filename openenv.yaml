@@ -1,0 +1,9 @@
+name: healthcare_claim_env
+entrypoint: env.healthcare_env:HealthcareEnv
+
+tasks:
+  - easy_claim
+  - medium_claim
+  - hard_claim
+
+max_steps: 6
