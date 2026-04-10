@@ -5,34 +5,34 @@ from env.healthcare_env import HealthcareEnv
 
 app = FastAPI()
 
-# Initialize environment
 env = HealthcareEnv()
 
 
-# Root endpoint (for health check)
+# Health check
 @app.get("/")
 def root():
     return {"status": "running"}
 
 
-# ✅ RESET (MUST BE POST)
+# ✅ MUST accept POST (no params)
 @app.post("/reset")
-def reset():
+async def reset():
     obs = env.reset()
+
     return {
         "observation": obs.dict()
     }
 
 
-# Action schema (if not already imported)
+# Action schema
 class Action(BaseModel):
     action_type: str
     value: Optional[str] = None
 
 
-# ✅ STEP (MUST BE POST)
+# ✅ MUST accept JSON body
 @app.post("/step")
-def step(action: Action):
+async def step(action: Action):
     result = env.step(action)
 
     return {
@@ -43,7 +43,7 @@ def step(action: Action):
     }
 
 
-# State endpoint (GET is fine)
+# State endpoint
 @app.get("/state")
 def state():
     return env.state_view()
