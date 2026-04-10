@@ -1,18 +1,19 @@
 import os
 from openai import OpenAI
-from models.schemas import Action
 from env.healthcare_env import HealthcareEnv
+from models.schemas import Action
 
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-mini")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
-
+# ✅ SAFE: Do not crash if no API key
+client = None
+if HF_TOKEN:
+    client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
 def log_start(task, env, model):
     print(f"[START] task={task} env={env} model={model}", flush=True)
-
 
 def log_step(step, action, reward, done, error):
     print(
@@ -20,11 +21,9 @@ def log_step(step, action, reward, done, error):
         flush=True
     )
 
-
 def log_end(success, steps, score, rewards):
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     print(f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}", flush=True)
-
 
 def main():
     env = HealthcareEnv()
@@ -36,7 +35,7 @@ def main():
 
     for step in range(1, 7):
 
-        # Simple rule-based agent
+        # Simple rule-based agent (no OpenAI needed)
         if obs.submitted_code != "X456":
             action = Action(action_type="fix_code", value="X456")
         elif "authorization" not in obs.documents:
@@ -61,7 +60,6 @@ def main():
     env.close()
 
     log_end(success, step, score, rewards)
-
 
 if __name__ == "__main__":
     main()
