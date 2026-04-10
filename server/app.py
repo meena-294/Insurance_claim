@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 from pydantic import BaseModel
 from typing import Optional
 from env.healthcare_env import HealthcareEnv
@@ -14,13 +14,13 @@ def root():
     return {"status": "running"}
 
 
-# ✅ MUST accept POST (no params)
+# ✅ RESET (POST, no input required)
 @app.post("/reset")
 async def reset():
     obs = env.reset()
 
     return {
-        "observation": obs.dict()
+        "observation": obs.dict() if hasattr(obs, "dict") else obs
     }
 
 
@@ -30,13 +30,13 @@ class Action(BaseModel):
     value: Optional[str] = None
 
 
-# ✅ MUST accept JSON body
+# ✅ STEP (POST with JSON body)
 @app.post("/step")
-async def step(action: Action):
+async def step(action: Action = Body(...)):
     result = env.step(action)
 
     return {
-        "observation": result.observation.dict(),
+        "observation": result.observation.dict() if hasattr(result.observation, "dict") else result.observation,
         "reward": float(result.reward),
         "done": bool(result.done),
         "info": result.info if result.info else {}
